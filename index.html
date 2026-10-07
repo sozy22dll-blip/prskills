@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="ckb" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>خشتەی هەفتانەی قوتابخانە</title>
+  <style>
+    * { box-sizing: border-box; }
+    body { font-family: "Segoe UI", Tahoma, sans-serif; background: #eef1f6; margin: 0; padding: 20px; color: #1f2937; }
+    .container { max-width: 1000px; margin: 0 auto; background: #fff; padding: 25px; border-radius: 14px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); }
+    #scheduleArea { background: #fff; width: 100%; }
+    table { width: 100%; border-collapse: collapse; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.06); direction: rtl; table-layout: fixed; }
+    th, td { border: 1px solid #dbe3ec; padding: 6px 4px; text-align: center; vertical-align: middle; font-size: 12px; }
+    thead th { background: linear-gradient(135deg, #1e40af, #3b82f6); color: #fff; font-weight: 600; font-size: 13px; padding: 10px 4px; }
+    thead th:first-child { background: linear-gradient(135deg, #0f172a, #1e293b); width: 80px; }
+    tbody tr:nth-child(even) td { background: #f8fafc; }
+    .day-col { background: #f1f5f9 !important; font-weight: 700; color: #1e3a8a; font-size: 13px; width: 80px; }
+    td.lesson-cell { padding: 6px 3px; vertical-align: top; }
+    .time-label { display: flex; flex-direction: row; direction: rtl; justify-content: center; align-items: center; gap: 2px; font-size: 10px; color: #1e40af; font-weight: 700; margin-bottom: 4px; white-space: nowrap; }
+    .time-label .t { direction: ltr; unicode-bidi: isolate; }
+    .time-label .dash { color: #94a3b8; font-weight: 400; }
+    .subject { outline: none; cursor: text; min-height: 24px; padding: 3px; border-radius: 4px; font-size: 12px; font-weight: 500; color: #1f2937; background: #f8fafc; word-wrap: break-word; }
+    .subject:focus { background: #dbeafe; box-shadow: inset 0 0 0 2px #3b82f6; }
+    .subject:empty::before { content: "—"; color: #cbd5e1; }
+    .toolbar { display: flex; justify-content: center; gap: 10px; margin-bottom: 15px; flex-wrap: wrap; }
+    .btn { padding: 10px 20px; font-size: 14px; font-weight: 600; border: none; border-radius: 8px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; font-family: inherit; }
+    .btn-pdf { background: linear-gradient(135deg, #dc2626, #ef4444); color: #fff; }
+    .btn-save { background: linear-gradient(135deg, #16a34a, #22c55e); color: #fff; }
+    .btn-clear { background: #fff; color: #475569; border: 2px solid #cbd5e1; }
+    .status { text-align: center; margin-top: 10px; font-size: 12px; color: #64748b; min-height: 18px; }
+    
+    @media print {
+      @page { size: A4 landscape; margin: 8mm; }
+      body { background: #fff; padding: 0; margin: 0; }
+      .container { box-shadow: none; border-radius: 0; padding: 0; max-width: 100%; width: 100%; }
+      .toolbar, .status { display: none !important; }
+      #scheduleArea { padding: 0; width: 100%; }
+      table { box-shadow: none; border-radius: 0; width: 100% !important; }
+      th, td { padding: 4px 2px !important; font-size: 10pt !important; }
+      .time-label { font-size: 8pt !important; }
+      .subject { min-height: 20px; font-size: 10pt !important; background: transparent !important; }
+      .subject:empty::before { content: "" !important; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+
+    <div class="toolbar">
+      <button class="btn btn-save" onclick="saveHTMLFile()">💾 پاشەکەوتکردنی فایل بۆ PDF</button>
+      <button class="btn btn-pdf" onclick="window.print()">📄 چاپکردن</button>
+      <button class="btn btn-clear" onclick="clearAll()">🧹 پاککردنەوە</button>
+    </div>
+
+    <div class="status" id="status">   .</div>
+
+    <div id="scheduleArea">
+      <table>
+        <thead>
+          <tr>
+            <th>ڕۆژ</th>
+            <th>وانەی ١</th>
+            <th>وانەی ٢</th>
+            <th>وانەی ٣</th>
+            <th>وانەی ٤</th>
+            <th>وانەی ٥</th>
+            <th>وانەی ٦</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="day-col">یەکشەممە</td>
+            <td class="lesson-cell"><span class="time-label"><span class="t">12:45</span><span class="dash">–</span><span class="t">1:25 PM</span></span><div class="subject" contenteditable="true"></div></td>
+            <td class="lesson-cell"><span class="time-label"><span class="t">1:30</span><span class="dash">–</span><span class="t">2:10 PM</span></span><div class="subject" contenteditable="true"></div></td>
+            <td class="lesson-cell"><span class="time-label"><span class="t">2:20</span><span class="dash">–</span><span class="t">3:00 PM</span></span><div class="subject" contenteditable="true"></div></td>
+            <td class="lesson-cell"><span class="time-label"><span class="t">3:05</span><span class="dash">–</span><span class="t">3:45 PM</span></span><div class="subject" contenteditable="true"></div></td>
+            <td class="lesson-cell"><span class="time-label"><span class="t">3:50</span><span class="dash">–</span><span class="t">4:30 PM</span></span><div class="subject" contenteditable="true"></div></td>
+            <td class="lesson-cell"><span class="time-label"><span class="t">4:35</span><span class="dash">–</span><span class="t">4:55 PM</span></span><div class="subject" contenteditable="true"></div></td>
+          </tr>
+          <tr>
+            <td class="day-col">دووشەممە</td>
+            <td class="lesson-cell"><span class="time-label"><span class="t">12:45</span><span class="dash">–</span><span class="t">1:25 PM</span></span><div class="subject" contenteditable="true"></div></td>
+            <td class="lesson-cell"><span class="time-label"><span class="t">1:30</span><span class="dash">–</span><span class="t">2:10 PM</span></span><div class="subject" contenteditable="true"></div></td>
+            <td class="lesson-cell"><span class="time-label"><span class="t">2:20</span><span class="dash">–</span><span class="t">3:00 PM</span></span><div class="subject" contenteditable="true"></div></td>
+            <td class="lesson-cell"><span class="time-label"><span class="t">3:05</span><span class="dash">–</span><span class="t">3:45 PM</span></span><div class="subject" contenteditable="true"></div></td>
+            <td class="lesson-cell"><span class="time-label"><span class="t">3:50</span><span class="dash">–</span><span class="t">4:30 PM</span></span><div class="subject" contenteditable="true"></div></td>
+            <td class="lesson-cell"><span class="time-label"><span class="t">4:35</span><span class="dash">–</span><span class="t">4:55 PM</span></span><div class="subject" contenteditable="true"></div></td>
+          </tr>
+          <tr>
+            <td class="day-col">سێشەممە</td>
+            <td class="lesson-cell"><span class="time-label"><span class="t">8:15</span><span class="dash">–</span><span class="t">8:55 AM</span></span><div class="subject" contenteditable="true"></div></td>
+            <td class="lesson-cell"><span class="time-label"><span class="t">9:00</span><span class="dash">–</span><span class="t">9:40 AM</span></span><div class="subject" contenteditable="true"></div></td>
+            <td class="lesson-cell"><span class="time-label"><span class="t">9:50</span><span class="dash">–</span><span class="t">10:30 AM</span></span><div class="subject" contenteditable="true"></div></td>
+            <td class="lesson-cell"><span class="time-label"><span class="t">10:35</span><span class="dash">–</span><span class="t">11:15 AM</span></span><div class="subject" contenteditable="true"></div></td>
+            <td class="lesson-cell"><span class="time-label"><span class="t">11:20</span><span class="dash">–</span><span class="t">12:00 PM</span></span><div class="subject" contenteditable="true"></div></td>
+            <td class="lesson-cell"><span class="time-label"><span class="t">12:05</span><span class="dash">–</span><span class="t">12:25 PM</span></span><div class="subject" contenteditable="true"></div></td>
+          </tr>
+          <tr>
+            <td class="day-col">چوارشەممە</td>
+            <td class="lesson-cell"><span class="time-label"><span class="t">8:15</span><span class="dash">–</span><span class="t">8:55 AM</span></span><div class="subject" contenteditable="true"></div></td>
+            <td class="lesson-cell"><span class="time-label"><span class="t">9:00</span><span class="dash">–</span><span class="t">9:40 AM</span></span><div class="subject" contenteditable="true"></div></td>
+            <td class="lesson-cell"><span class="time-label"><span class="t">9:50</span><span class="dash">–</span><span class="t">10:30 AM</span></span><div class="subject" contenteditable="true"></div></td>
+            <td class="lesson-cell"><span class="time-label"><span class="t">10:35</span><span class="dash">–</span><span class="t">11:15 AM</span></span><div class="subject" contenteditable="true"></div></td>
+            <td class="lesson-cell"><span class="time-label"><span class="t">11:20</span><span class="dash">–</span><span class="t">12:00 PM</span></span><div class="subject" contenteditable="true"></div></td>
+            <td class="lesson-cell"><span class="time-label"><span class="t">12:05</span><span class="dash">–</span><span class="t">12:25 PM</span></span><div class="subject" contenteditable="true"></div></td>
+          </tr>
+          <tr>
+            <td class="day-col">پێنجشەممە</td>
+            <td class="lesson-cell"><span class="time-label"><span class="t">8:15</span><span class="dash">–</span><span class="t">8:55 AM</span></span><div class="subject" contenteditable="true"></div></td>
+            <td class="lesson-cell"><span class="time-label"><span class="t">9:00</span><span class="dash">–</span><span class="t">9:40 AM</span></span><div class="subject" contenteditable="true"></div></td>
+            <td class="lesson-cell"><span class="time-label"><span class="t">9:50</span><span class="dash">–</span><span class="t">10:30 AM</span></span><div class="subject" contenteditable="true"></div></td>
+            <td class="lesson-cell"><span class="time-label"><span class="t">10:35</span><span class="dash">–</span><span class="t">11:15 AM</span></span><div class="subject" contenteditable="true"></div></td>
+            <td class="lesson-cell"><span class="time-label"><span class="t">11:20</span><span class="dash">–</span><span class="t">12:00 PM</span></span><div class="subject" contenteditable="true"></div></td>
+            <td class="lesson-cell"><span class="time-label"><span class="t">12:05</span><span class="dash">–</span><span class="t">12:25 PM</span></span><div class="subject" contenteditable="true"></div></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <script>
+    document.querySelectorAll('[contenteditable]').forEach((el, i) => {
+      const key = 'schedule_cell_v19_' + i;
+      const saved = localStorage.getItem(key);
+      if (saved) el.textContent = saved;
+      el.addEventListener('input', () => {
+        localStorage.setItem(key, el.textContent);
+      });
+    });
+
+    function saveHTMLFile() {
+      const status = document.getElementById('status');
+      
+      const clone = document.getElementById('scheduleArea').cloneNode(true);
+      
+      clone.querySelectorAll('[contenteditable]').forEach(el => {
+        el.removeAttribute('contenteditable');
+      });
+
+      const styles = document.querySelector('style').innerHTML;
+
+      const newHTML = '<!DOCTYPE html>\n' +
+        '<html lang="ckb" dir="rtl">\n' +
+        '<head>\n' +
+        '<meta charset="UTF-8">\n' +
+        '<title>Schedule</title>\n' +
+        '<style>' + styles + '</style>\n' +
+        '</head>\n' +
+        '<body>\n' +
+        '<div class="container">' + clone.outerHTML + '</div>\n' +
+        '</body>\n' +
+        '</html>';
+
+      try {
+        const blob = new Blob([newHTML], { type: 'text/html;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = 'schedule-final.html';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        status.style.color = '#16a34a';
+        status.textContent = '✅ فایلە نوێیەکە دروستکرا!';
+        setTimeout(() => URL.revokeObjectURL(url), 10000);
+      } catch (e) {
+        copyToClipboard(newHTML);
+        status.style.color = '#1e40af';
+        status.textContent = '📋 HTMLەکە کۆپی کرا.';
+      }
+    }
+
+    function copyToClipboard(text) {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.select();
+      try { document.execCommand('copy'); } catch(e) {}
+      document.body.removeChild(ta);
+    }
+
+    function clearAll() {
+      if (!confirm('دڵنیایت هەموو ناوەکان پاک بکرێنەوە؟')) return;
+      document.querySelectorAll('[contenteditable]').forEach((el, i) => {
+        el.textContent = '';
+        localStorage.removeItem('schedule_cell_v19_' + i);
+      });
+    }
+  </script>
+
+</body>
+</html>
